@@ -1,6 +1,6 @@
 import logo from "./logo.svg";
 import "./App.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route, Outlet, Link } from "react-router-dom";
 import {
   TaskList,
@@ -10,6 +10,7 @@ import {
   Header,
   TaskDetail,
 } from "components/organisms";
+import { getToDoList } from "./components/api";
 
 interface AppProps {
   title: string;
@@ -22,7 +23,20 @@ interface AppProps {
 
 export const App = ({ title, description, body }: AppProps) => {
   const [showList, setShowList] = useState<boolean>(true);
+  const [todoList, setTodoList] = useState([]);
 
+  useEffect(() => {
+    const getList = async () => {
+      const result = await getToDoList();
+      if (result.ok) {
+        setTodoList(result.data.todos);
+      } else {
+        console.log(result.data);
+      }
+    };
+    getList();
+  }, []);
+  console.log(todoList);
   return (
     <div className="App">
       <Header />
@@ -33,7 +47,7 @@ export const App = ({ title, description, body }: AppProps) => {
         <Routes>
           <Route path="/" element={<MainBody />}>
             <Route index element={<Home />} />
-            <Route path="tasklist" element={<TaskList />} />
+            <Route path="tasklist" element={<TaskList todoList={todoList} />} />
             <Route path="taskdetail/:id" element={<TaskDetail />} />
             <Route path="*" element={<NotFound />} />
           </Route>
